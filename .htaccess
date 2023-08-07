@@ -1,5 +1,5 @@
 RewriteEngine on
-RewriteBase /
+RewriteBase /SamDefi/
 RewriteRule ^(login|register|rates|reviews|news|sitemap|contacts)?$ index.php?a=$1 [L]
 RewriteRule ^login/2fa?$ index.php?a=login&b=2fa [L]
 RewriteRule ^exchange/(.*)_(.*)/(.*)?$ index.php?a=exchange&from=$1&to=$2 [L]

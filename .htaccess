@@ -12,7 +12,7 @@ RewriteRule ^account/exchanges/(.*)?$ index.php?a=account&b=exchanges&page=$1 [L
 RewriteRule ^account/tickets/(.*)?$ index.php?a=account&b=tickets&page=$1 [L]
 RewriteRule ^account/reviews/(.*)?$ index.php?a=account&b=reviews&page=$1 [L]
 RewriteRule ^account/invest/(.*)?$ index.php?a=account&b=invest&package_id=$1 [L]
-RewriteRule ^account/settings/(profile|security|verification)?$ index.php?a=account&b=settings&c=$1 [L]
+RewriteRule ^account/settings/(profile|security|verification-indivisual|verification-business)?$ index.php?a=account&b=settings&c=$1 [L]
 RewriteRule ^reviews/(.*)?$ index.php?a=reviews&page=$1 [L]
 RewriteRule ^invite/(.*)?$ index.php?refid=$1 [L]
 RewriteRule ^order/(.*)?$ index.php?a=order&id=$1 [L]

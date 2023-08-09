@@ -15,78 +15,78 @@ if($b == "doc_accept") {
     $row = $query->fetch_assoc();
     ?>
     <div class="row">
-            <div class="col-md-12 col-lg-12">
-                <h4 class="card-title"><i class="fa fa-accept"></i> Accept Document</h4>
-                <br><br>
+        <div class="col-md-12 col-lg-12">
+            <h4 class="card-title"><i class="fa fa-accept"></i> Accept Document</h4>
+            <br><br>
+        </div>
+        <div class="col-lg-12 grid-margin stretch-card">
+            <div class="card">
+            <div class="card-body">
+            <?php
+                    $confirmed = protect($_GET['confirmed']);
+                    if(isset($confirmed) && $confirmed == "1") {
+                    $update = $db->query("UPDATE ce_users_documents SET status='3' WHERE id='$id'");
+                    $check = $db->query("SELECT * FROM ce_users_documents WHERE uid='$row[uid]' and status='1'");
+                    if($check->num_rows==0) {
+                        $update = $db->query("UPDATE ce_users SET documents_pending='0' WHERE id='$row[uid]'");
+                    }
+                    echo success("Document was accepted successfully.");
+                    echo '<meta http-equiv="refresh" content="1; url=./?a=users&b=edit&id='.$row['uid'].'#documents">';
+                    } else {
+                    echo info("Are you sure you want to accept this document?");
+                    $doc = $row;
+                    ?>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                <th>Username</th>
+                                <th>Document Type</th>
+                                    <th>Document Number</th>
+                                    <th>Additional Information</th>
+                                    <th>Uploaded on</th>
+                                    <th>File</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                        <tr>
+                                            <td><a href="./?a=users&b=edit&id=<?php echo $doc['uid']; ?>"><?php if(empty(idinfo($doc['uid'],"first_name"))) { echo idinfo($doc['uid'],"email"); } else { echo idinfo($doc['uid'],"first_name")." ".idinfo($doc['uid'],"last_name"); } ?></a></td>
+                                            <td>
+                                            <?php 
+                                            if($doc['document_type'] == "1") {
+                                                $document_type = 'Nationality ID Card (front)';
+                                            } elseif($doc['document_type'] == "2") {
+                                                $document_type = 'Nationality ID Card (back)';
+                                            } elseif($doc['document_type'] == "3") {
+                                                $document_type = 'Passport';
+                                            } elseif($doc['document_type'] == "4") {
+                                                $document_type = 'Driver License';
+                                            } elseif($doc['document_type'] == "5") {
+                                                $document_type = 'Account Ownership';
+                                            } else {
+                                                $document_type = 'Unknown';
+                                            }
+                                            echo $document_type; 
+                                            ?>
+                                            </td>
+                                            <td><?php echo $doc['u_field_1']; ?></td>
+                                            <td><?php echo $doc['u_field_2']; ?></td>
+                                            <td><?php echo date("d/m/Y H:i",$doc['uploaded']); ?></td>
+                                            <td><a href="<?php echo $settings['url'].$doc['document_path']; ?>" target="_blank" class="badge badge-primary"><i class="fa fa-search"></i> Preview</a></td>
+                                        </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <br>
+                    <?php
+                    echo '<a href="./?a=users&b=doc_accept&id='.$id.'&confirmed=1" class="btn btn-success"><i class="fa fa-check"></i> Yes, I accept</a> 
+                    <a href="./?a=users&b=edit&id='.$doc['uid'].'" class="btn btn-danger"><i class="fa fa-times"></i> No</a>';
+                    }
+                    ?>
             </div>
-            <div class="col-lg-12 grid-margin stretch-card">
-                <div class="card">
-                <div class="card-body">
-                <?php
-                     $confirmed = protect($_GET['confirmed']);
-                     if(isset($confirmed) && $confirmed == "1") {
-                        $update = $db->query("UPDATE ce_users_documents SET status='3' WHERE id='$id'");
-                        $check = $db->query("SELECT * FROM ce_users_documents WHERE uid='$row[uid]' and status='1'");
-                        if($check->num_rows==0) {
-                            $update = $db->query("UPDATE ce_users SET documents_pending='0' WHERE id='$row[uid]'");
-                        }
-                        echo success("Document was accepted successfully.");
-                        echo '<meta http-equiv="refresh" content="1; url=./?a=users&b=edit&id='.$row[uid].'#documents">';
-                     } else {
-                        echo info("Are you sure you want to accept this document?");
-                        $doc = $row;
-                        ?>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                    <th>Username</th>
-                                    <th>Document Type</th>
-                                        <th>Document Number</th>
-                                        <th>Additional Information</th>
-                                        <th>Uploaded on</th>
-                                        <th>File</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                            <tr>
-                                                <td><a href="./?a=users&b=edit&id=<?php echo $doc['uid']; ?>"><?php if(empty(idinfo($doc['uid'],"first_name"))) { echo idinfo($doc['uid'],"email"); } else { echo idinfo($doc['uid'],"first_name")." ".idinfo($doc['uid'],"last_name"); } ?></a></td>
-                                                <td>
-                                                <?php 
-                                                if($doc['document_type'] == "1") {
-                                                    $document_type = 'Nationality ID Card (front)';
-                                                } elseif($doc['document_type'] == "2") {
-                                                    $document_type = 'Nationality ID Card (back)';
-                                                } elseif($doc['document_type'] == "3") {
-                                                    $document_type = 'Passport';
-                                                } elseif($doc['document_type'] == "4") {
-                                                    $document_type = 'Driver License';
-                                                } elseif($doc['document_type'] == "5") {
-                                                    $document_type = 'Account Ownership';
-                                                } else {
-                                                    $document_type = 'Unknown';
-                                                }
-                                                echo $document_type; 
-                                                ?>
-                                                </td>
-                                                <td><?php echo $doc['u_field_1']; ?></td>
-                                                <td><?php echo $doc['u_field_2']; ?></td>
-                                                <td><?php echo date("d/m/Y H:i",$doc['uploaded']); ?></td>
-                                                <td><a href="<?php echo $settings['url'].$doc['document_path']; ?>" target="_blank" class="badge badge-primary"><i class="fa fa-search"></i> Preview</a></td>
-                                            </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <br>
-                        <?php
-                        echo '<a href="./?a=users&b=doc_accept&id='.$id.'&confirmed=1" class="btn btn-success"><i class="fa fa-check"></i> Yes, I accept</a> 
-                        <a href="./?a=users&b=edit&id='.$doc[uid].'" class="btn btn-danger"><i class="fa fa-times"></i> No</a>';
-                     }
-                     ?>
-                </div>
-              </div>
             </div>
         </div>
+    </div>
     <?php
 } elseif($b == "doc_reject") {
     $id = protect($_GET['id']);
@@ -114,7 +114,7 @@ if($b == "doc_accept") {
                             $update = $db->query("UPDATE ce_users SET documents_pending='0' WHERE id='$row[uid]'");
                         }
                         echo success("Document was rejected successfully.");
-                        echo '<meta http-equiv="refresh" content="1; url=./?a=users&b=edit&id='.$row[uid].'#documents">';
+                        echo '<meta http-equiv="refresh" content="1; url=./?a=users&b=edit&id='.$row['uid'].'#documents">';
                      } else {
                         echo info("Are you sure you want to reject this document?");
                         $doc = $row;
@@ -168,7 +168,7 @@ if($b == "doc_accept") {
                         </div>
                         <?php
                         echo '<button type="submit" name="ce_btn" value="reject"  class="btn btn-success"><i class="fa fa-check"></i> Yes, I accept</button> 
-                        <a href="./?a=users&b=edit&id='.$doc[uid].'" class="btn btn-danger"><i class="fa fa-times"></i> No</a></form>';
+                        <a href="./?a=users&b=edit&id='.$doc['uid'].'" class="btn btn-danger"><i class="fa fa-times"></i> No</a></form>';
                      }
                      ?>
                 </div>
@@ -176,7 +176,130 @@ if($b == "doc_accept") {
             </div>
         </div>
     <?php
-} elseif($b == "edit") {
+} elseif($b == "business_doc_accept") {
+    $id = protect($_GET['id']);
+    $query = $db->query("SELECT * FROM `ce_users_business` WHERE `id` = '$id'");
+    if($query->num_rows==0) {
+        header("Location: ./?a=users");
+    }
+    $row = $query->fetch_assoc();
+    ?>
+    <div class="row">
+        <div class="col-md-12 col-lg-12">
+            <h4 class="card-title"><i class="fa fa-accept"></i> Accept Business Document</h4>
+            <br><br>
+        </div>
+        <div class="col-lg-12 grid-margin stretch-card">
+            <div class="card">
+            <div class="card-body">
+            <?php
+                    $confirmed = protect($_GET['confirmed']);
+                    if(isset($confirmed) && $confirmed == "1") {
+                    $time = time();
+                    $update = $db->query("UPDATE `ce_users_business` SET `status` = '3', `created` = '$time' WHERE `id` = '$id'");
+                    $check = $db->query("SELECT * FROM `ce_users_business` WHERE `uid` = '$row[uid]' AND `status` = '1'");
+                    echo success("Business document was accepted successfully.");
+                    echo '<meta http-equiv="refresh" content="1; url=./?a=users&b=edit&id='.$row['uid'].'#documents">';
+                    } else {
+                        echo info("Are you sure you want to accept this business document?");
+                        $doc = $row;
+                    ?>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Company ID</th>
+                                    <th>Article</th>
+                                    <th>Statement</th>
+                                    <th>Uploaded on</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><a href="./?a=users&b=edit&id=<?php echo $doc['uid']; ?>"><?php if(empty(idinfo($doc['uid'],"first_name"))) { echo idinfo($doc['uid'],"email"); } else { echo idinfo($doc['uid'],"first_name")." ".idinfo($doc['uid'],"last_name"); } ?></a></td>
+                                    <td><?=$doc['company_id'];?></td>
+                                    <td><a target="_blank" href="<?=$settings["url"].$doc['article'];?>"><?=end(explode("/", $doc['article']))?></a></td>
+                                    <td><a target="_blank" href="<?=$settings["url"].$doc['statement'];?>"><?=end(explode("/", $doc['statement']))?></a></td>
+                                    <td><?php echo date("d/m/Y H:i",$doc['uploaded']); ?></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <br>
+                    <?php
+                    echo '<a href="./?a=users&b=business_doc_accept&id='.$id.'&confirmed=1" class="btn btn-success"><i class="fa fa-check"></i> Yes, I accept</a> 
+                    <a href="./?a=users&b=edit&id='.$doc['uid'].'" class="btn btn-danger"><i class="fa fa-times"></i> No</a>';
+                    }
+                    ?>
+            </div>
+            </div>
+        </div>
+    </div>
+    <?php
+} elseif($b == "business_doc_reject") {
+    $id = protect($_GET['id']);
+    $query = $db->query("SELECT * FROM `ce_users_business` WHERE `id`='$id'");
+    if($query->num_rows==0) {
+        header("Location: ./?a=users");
+    }
+    $row = $query->fetch_assoc();
+    ?>
+    <div class="row">
+            <div class="col-md-12 col-lg-12">
+                <h4 class="card-title"><i class="fa fa-times"></i> Reject Business Document</h4>
+                <br><br>
+            </div>
+            <div class="col-lg-12 grid-margin stretch-card">
+                <div class="card">
+                <div class="card-body">
+                <?php
+                     $confirmed = protect($_GET['confirmed']);
+                     if(isset($confirmed) && $confirmed == "1") {
+                        $time = time();
+                        $update = $db->query("UPDATE `ce_users_business` SET `status` = '2', `created` = '$time' WHERE id = '$id'");
+                        $check = $db->query("SELECT * FROM `ce_users_business` WHERE `uid` = '$row[uid]' AND `status` = '1'");
+                        echo success("Business document was rejected successfully.");
+                        echo '<meta http-equiv="refresh" content="1; url=./?a=users&b=edit&id='.$row['uid'].'#documents">';
+                     } else {
+                        echo info("Are you sure you want to reject this business document?");
+                        $doc = $row;
+                        ?>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Company ID</th>
+                                        <th>Article</th>
+                                        <th>Statement</th>
+                                        <th>Uploaded on</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a href="./?a=users&b=edit&id=<?php echo $doc['uid']; ?>"><?php if(empty(idinfo($doc['uid'],"first_name"))) { echo idinfo($doc['uid'],"email"); } else { echo idinfo($doc['uid'],"first_name")." ".idinfo($doc['uid'],"last_name"); } ?></a></td>
+                                        <td><?=$doc['company_id'];?></td>
+                                        <td><a target="_blank" href="<?=$settings["url"].$doc['article'];?>"><?=end(explode("/", $doc['article']))?></a></td>
+                                        <td><a target="_blank" href="<?=$settings["url"].$doc['statement'];?>"><?=end(explode("/", $doc['statement']))?></a></td>
+                                        <td><?php echo date("d/m/Y H:i",$doc['uploaded']); ?></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <br>
+                        <form action="./?a=users&b=business_doc_reject&id=<?php echo $id; ?>&confirmed=1" method="POST">
+                        <?php
+                        echo '<button type="submit" name="ce_btn" value="reject"  class="btn btn-success"><i class="fa fa-check"></i> Yes, I accept</button> 
+                        <a href="./?a=users&b=edit&id='.$doc['uid'].'" class="btn btn-danger"><i class="fa fa-times"></i> No</a></form>';
+                     }
+                     ?>
+                </div>
+              </div>
+            </div>
+        </div>
+    <?php
+}  elseif($b == "edit") {
     $id = protect($_GET['id']);
     $query = $db->query("SELECT * FROM ce_users WHERE id='$id'");
     if($query->num_rows==0) {
@@ -309,7 +432,7 @@ if($b == "doc_accept") {
                                     if($dquery->num_rows>0) {
                                         while($d = $dquery->fetch_assoc()) {
                                             if($row['discount_level'] == $d['discount_level']) { $sel = 'selected'; } else { $sel = ''; }
-                                            echo '<option value="'.$d[discount_level].'" '.$sel.'>Level: '.$d[discount_level].', Discount: '.$d[discount_percentage].'%</option>';
+                                            echo '<option value="'.$d['discount_level'].'" '.$sel.'>Level: '.$d['discount_level'].', Discount: '.$d['discount_percentage'].'%</option>';
                                         }
                                     }
                                     ?>
@@ -489,6 +612,68 @@ if($b == "doc_accept") {
                                                     <?php if($doc['status'] == "1") { ?>
                                                         <a href="./?a=users&b=doc_accept&id=<?php echo $doc['id']; ?>" class="badge badge-success"><i class="fa fa-check"></i> Accept</a>
                                                         <a href="./?a=users&b=doc_reject&id=<?php echo $doc['id']; ?>" class="badge badge-danger"><i class="fa fa-times"></i> Reject</a>
+                                                    <?php } ?>
+                                                </td>
+                                            </tr>
+                                            <?php
+                                        }
+                                    } else {
+                                        echo '<tr><td colspan="7">No documents yet.</td></tr>';
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title" id="documents">Business Documents</h4>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Company ID</th>
+                                        <th>Article</th>
+                                        <th>Statement</th>
+                                        <th>Uploaded on</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $business_documents = $db->query("SELECT * FROM `ce_users_business` WHERE `uid` = '$row[id]' ORDER BY `id`");
+                                    if($business_documents->num_rows>0) {
+                                        while($doc = $business_documents->fetch_assoc()) {
+                                            ?>
+                                            <tr>
+                                                <td><?php echo $doc['company_id']; ?></td>
+                                                <td><a target="_blank" href="<?=$settings["url"].$doc['article']?>"><?=end(explode("/",$doc['article']))?></a></td>
+                                                <td><a target="_blank" href="<?=$settings["url"].$doc['statement']?>"><?=end(explode("/",$doc['statement']))?></a></td>
+                                                <td><?php echo date("d/m/Y H:i",$doc['created']); ?></td>
+                                                <td>
+                                                    <?php
+                                                    if($doc['status'] == "1") {
+                                                        $status = '<span class="badge badge-primary">Under Review</span>';
+                                                    } elseif($doc['status'] == "2") {
+                                                        $status = '<span class="badge badge-danger">Rejected</span>';
+                                                    } elseif($doc['status'] == "3") {
+                                                        $status = '<span class="badge badge-success">Accepted</span>';
+                                                    } else {
+                                                        $status = '<span class="badge badge-default">Unknown</span>';
+                                                    }
+                                                    echo $status;
+                                                    ?>
+                                                </td>
+                                                <td> 
+                                                    <?php if($doc['status'] == "1") { ?>
+                                                        <a href="./?a=users&b=business_doc_accept&id=<?php echo $doc['id']; ?>" class="badge badge-success"><i class="fa fa-check"></i> Accept</a>
+                                                        <a href="./?a=users&b=business_doc_reject&id=<?php echo $doc['id']; ?>" class="badge badge-danger"><i class="fa fa-times"></i> Reject</a>
                                                     <?php } ?>
                                                 </td>
                                             </tr>

@@ -851,7 +851,7 @@ if($b == "dashboard") {
         $tpl->set("results",$results);
         $tpl->set("results_2fa",$results_2fa);
         echo $tpl->output();
-    } elseif($c == "verification") {
+    } elseif($c == "verification-indivisual") {
         $tpl = new Template("app/templates/".$settings['default_template']."/account/settings_verification.html",$lang);
         $tpl->set("url",$settings['url']);
         $tpl->set("name",$settings['name']);
@@ -890,7 +890,7 @@ if($b == "dashboard") {
                 $dresults = error($lang['error_19']);
             } elseif(empty($filename)) {
                 $dresults = error($lang['error_20']);
-            } elseif($filename > 10240) {
+            } elseif($filesize > 10000000) {
                 $dresults = error($lang['error_21']);
             } elseif(!in_array($fileextension,$extensions)) { 
                 $dresults = error($lang['error_22']); 
@@ -898,9 +898,7 @@ if($b == "dashboard") {
                 $secure_directory = CE_secure_directory();
                 if(!is_dir("./".$secure_directory)) {
                     mkdir("./".$secure_directory,0777);
-                    $file_htaccess = 'order deny,allow
-deny from all
-allow from 127.0.0.1';
+                    $file_htaccess = 'order deny,allow deny from all allow from 127.0.0.1';
                     file_put_contents("./".$secure_directory."/.htaccess",$file_htaccess);
                 }
                 $upload_file = $secure_directory.'/'.$_SESSION["ce_uid"];
@@ -953,6 +951,110 @@ allow from 127.0.0.1';
                 $dtpl->set("additional_information",$doc['u_field_2']);
                 $dtpl->set("filename",$doc['u_field_3']);
                 $dtpl->set("comment",$comment);
+                $dfiles .= $dtpl->output();
+            }
+        } else {
+            $dtpl = new Template("app/templates/".$settings['default_template']."/rows/no_documents.html",$lang);
+            $dfiles = $dtpl->output();
+        }
+        $tpl->set("dfiles",$dfiles);
+        $tpl->set("dresults",$dresults);
+        echo $tpl->output();
+    } elseif($c == "verification-business") {
+        $uid = $_SESSION["ce_uid"];
+        $tpl = new Template("app/templates/".$settings['default_template']."/account/settings_verification_business.html",$lang);
+        $tpl->set("url",$settings['url']);
+        $tpl->set("name",$settings['name']);
+        $eresults = '';
+        $dresults = '';
+        $EmailVerificationForm = '';
+        $email = idinfo($_SESSION['ce_uid'],"email");
+        $CEAction = protect($_POST['ce_btn']);
+        if(idinfo($_SESSION['ce_uid'],"email_verified") == "1") {
+            $etpl = new Template("app/templates/".$settings['default_template']."/rows/email_verification_success.html",$lang);
+            $etpl->set("email",$email);
+            $EmailVerificationForm = $etpl->output();
+        } else {
+            if(isset($CEAction) && $CEAction == "resend_email") {
+                CE_Send_VE($email);
+                $eresults = success($lang['success_7']);
+            }
+            $etpl = new Template("app/templates/".$settings['default_template']."/rows/email_verification_form.html",$lang);
+            $etpl->set("email",$email);
+            $EmailVerificationForm = $etpl->output();
+        }
+        $tpl->set("EmailVerificationForm",$EmailVerificationForm);
+        $tpl->set("eresults",$eresults);
+        if(isset($CEAction) && $CEAction == "upload_doc") {
+
+            $company_id = protect($_POST['company_id']);
+
+            $articlename = $_FILES['article']['name'];
+            $articlesize = $_FILES['article']['size'];
+            $articletmpname = $_FILES['article']['tmp_name'];
+            $articleextension = end(explode('.',$_FILES['article']['name'])); 
+            $articleextension = strtolower($articleextension); 
+
+            $statementname = $_FILES['statement']['name'];
+            $statementsize = $_FILES['statement']['size'];
+            $statementtmpname = $_FILES['statement']['tmp_name'];
+            $statementextension = end(explode('.',$_FILES['statement']['name'])); 
+            $statementextension = strtolower($statementextension);
+
+            $extensions = array('jpg','jpeg','png','pdf'); 
+            if(empty($company_id)) { 
+                $dresults = error("Company ID should not be empty");
+            } elseif(empty($articlename)) {
+                $dresults = error("Article should not be empty");
+            } elseif(empty($statementname)) {
+                $dresults = error("Statement should not be empty");
+            } elseif($articlesize > 10000000) {
+                $dresults = error("Article size should not be empty");
+            } elseif($statementsize > 10000000) {
+                $dresults = error("Statement size should not be empty");
+            } elseif(!in_array($articleextension,$extensions)) { 
+                $dresults = error("Allowed article file types is PNG, JPG or PDF."); 
+            } elseif(!in_array($statementextension,$extensions)) { 
+                $dresults = error("Allowed statement file types is PNG, JPG or PDF."); 
+            } else {
+
+                $articletarget = "app/uploads/business/".time().rand(1111,9999).'.'.$articleextension;
+                $statementtarget = "app/uploads/business/".time().rand(1111,9999).'.'.$statementextension;
+                move_uploaded_file($articletmpname, $articletarget);
+                move_uploaded_file($statementtmpname, $statementtarget);
+                $time = time();
+                $insert = $db->query("INSERT INTO `ce_users_business` 
+                (
+                    `company_id`, `article`, `statement`, `status`, `uid`, `created`
+                ) 
+                VALUES 
+                (
+                    '$company_id', '$articletarget', '$statementtarget', '1', '$uid' ,'$time'
+                )");
+                $dresults = success($lang['success_8']);
+            }
+        }
+        $dfiles = '';
+        $business_documents = $db->query("SELECT * FROM `ce_users_business` WHERE `uid` = '$_SESSION[ce_uid]' ORDER BY `id`");
+        if($business_documents->num_rows>0) {
+            while($doc = $business_documents->fetch_assoc()) {
+                if($doc['status'] == "1") {
+                    $status = '<span class="badge badge-primary">'.$lang["status_doc_1"].'</span>';
+                } elseif($doc['status'] == "2") {
+                    $status = '<span class="badge badge-danger">'.$lang["status_doc_2"].'</span>';
+                } elseif($doc['status'] == "3") {
+                    $status = '<span class="badge badge-success">'.$lang["status_doc_3"].'</span>';
+                } else {
+                    $status = '<span class="badge badge-default">'.$lang["status_unknown"].'</span>';
+                }
+                $dtpl = new Template("app/templates/".$settings['default_template']."/rows/business_documents_row.html",$lang);
+                $dtpl->set("company_id",$doc['company_id']);
+                $dtpl->set("article_name",end(explode("/",$doc['article'])));
+                $dtpl->set("statement_name",end(explode("/",$doc['statement'])));
+                $dtpl->set("article_target",$doc['article']);
+                $dtpl->set("statement_target",$doc['statement']);
+                $dtpl->set("status",$status);
+                $dtpl->set("url",$settings["url"]);
                 $dfiles .= $dtpl->output();
             }
         } else {

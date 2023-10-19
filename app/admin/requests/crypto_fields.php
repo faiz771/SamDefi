@@ -2,7 +2,7 @@
 define('CryptExchanger_INSTALLED',TRUE);
 ob_start();
 session_start();
-error_reporting(0);
+error_reporting(1);
 include("../../configs/bootstrap.php");
 include("../../includes/bootstrap.php");
 $merchant = protect($_GET['merchant']);

@@ -43,6 +43,28 @@ if($a == "rate") {
                             $data['status'] = 'success';
                             $rate_from = 1;
                             $rate_to = $calculate2;
+                        } elseif((gatewayinfo($gateway_send,"is_crypto") == "1" && ($currency_to == "CLP")) || (($currency_from == "CLP") && gatewayinfo($gateway_receive,"is_crypto") == "1") || ($currency_from == "USD" && ($currency_to == "CLP")) || ($currency_to == "USD" && ($currency_from == "CLP"))) {
+                            if($currency_from == "CLP") {
+                                $price = getCryptoCLP($currency_to,$currency_from);    
+                            } elseif($currency_to == "CLP") {
+                                $price = getCryptoCLP($currency_from,$currency_to);
+                            }
+                            
+                            if(($currency_from == "CLP") && gatewayinfo($gateway_receive,"is_crypto"))
+                            {
+                                $price = number_format($price,10,'.','');
+                            }
+                            $calculate1 = ($price * $fee) / 100;
+                            $calculate2 = $price - $calculate1;
+                            $calculate2 = number_format($calculate2, 10, '.', '');
+                            $data['status'] = 'success';
+                            if($currency_from == "CLP") {
+                                $rate_to = 1;
+                                $rate_from = $calculate2;
+                            } elseif($currency_to == "CLP") {
+                                $rate_to = $calculate2;
+                                $rate_from = 1;
+                            }
                         } elseif(gatewayinfo($gateway_send,"is_crypto") == "1" && gatewayinfo($gateway_receive,"is_crypto") == "0") {
                             $price = getCryptoPrice($currency_from);
                             if($currency_to == "USD" && gatewayinfo($gateway_send,"is_crypto") == "1") {
